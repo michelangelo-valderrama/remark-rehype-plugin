@@ -1,12 +1,15 @@
-import rehypeStringify from "rehype-stringify"
-import remarkStringify from "remark-stringify"
-import remarkParse from "remark-parse"
-import remarkGfm from "remark-gfm"
-import remarkFrontmatter from "remark-frontmatter"
 import { unified } from "unified"
 import { visit } from "unist-util-visit"
 import fs from "node:fs/promises"
 import rehypeParse from "rehype-parse"
+import rehypeStringify from "rehype-stringify"
+import remarkFrontmatter from "remark-frontmatter"
+import remarkGfm from "remark-gfm"
+import remarkParse from "remark-parse"
+import remarkStringify from "remark-stringify"
+
+const ORIGINAL_FILES_PATH = "./files/original"
+const MODIFIED_FILES_PATH = "./files/modified"
 
 const t = () => (tree) => {
   return visit(tree, "element", (node, _, parent) => {
@@ -62,18 +65,18 @@ const replaceFigures = async (content) => {
       bulletOther: "+",
       rule: "_",
     })
-    .process(content,)
+    .process(content)
 }
 
 ;(async () => {
-  const files = await fs.readdir("./files/originals", "utf-8")
+  const files = await fs.readdir(ORIGINAL_FILES_PATH, "utf-8")
   const promises = []
   files.forEach(async (f) => {
     const promise = fs
-      .readFile(`./files/originals/${f}`, "utf-8")
+      .readFile(`${ORIGINAL_FILES_PATH}/${f}`, "utf-8")
       .then((content) => {
         replaceFigures(content).then((data) => {
-          fs.writeFile(`./files/updated/${f}`, data.toString())
+          fs.writeFile(`${MODIFIED_FILES_PATH}/${f}`, data.toString())
         })
       })
     promises.push(promise)
@@ -81,8 +84,9 @@ const replaceFigures = async (content) => {
   Promise.all(promises)
 })()
 
+// para pruebas
 // ;(async () => {
-//   const file = await fs.readFile("./files/originals/test.md", "utf-8")
+//   const file = await fs.readFile(`${MODIFIED_FILES_PATH}/test.md`, "utf-8")
 //   const resp = await replaceFigures(file)
-//   console.log("\n-----------Response-----------\n" + resp.toString())
+//   console.log("\n\n-----------Response-----------\n\n" + resp.toString())
 // })()
